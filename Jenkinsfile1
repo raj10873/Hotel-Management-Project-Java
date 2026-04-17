@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+
+    environment {
+        REPO_URL = 'https://github.com/raj10873/Hotel-Management-Project-Java.git'
+    }
+
+    stages {
+        stage('Merge development-code into release-code') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'raj-git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    script {
+                        gitMerge('development-code', 'release-code', env.GIT_USERNAME, env.GIT_PASSWORD)
+                    }
+                }
+            }
+        }
+
+        stage('Merge release-code into main') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'raj-git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    script {
+                        gitMerge('release-code', 'main', env.GIT_USERNAME, env.GIT_PASSWORD)
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'All merges completed successfully!'
+        }
+        failure {
+            echo 'Merge failed! Please check conflicts or authentication issues.'
+        }
+    }
+}
